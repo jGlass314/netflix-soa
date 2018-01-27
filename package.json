@@ -1,0 +1,31 @@
+{
+  "name": "hrsf86-thesis",
+  "version": "1.0.0",
+  "description": "Scaled Netflix backend thesis project",
+  "main": ".eslintrc.js",
+  "scripts": {
+    "server": "nodemon ./server/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jGlass314/hrsf86-thesis.git"
+  },
+  "keywords": [
+    "thesis",
+    "scaling",
+    "netflix"
+  ],
+  "author": "Josh Klein",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jGlass314/hrsf86-thesis/issues"
+  },
+  "homepage": "https://github.com/jGlass314/hrsf86-thesis#readme",
+  "dependencies": {
+    "axios": "^0.17.1",
+    "elasticsearch": "^14.0.0",
+    "koa": "^2.4.1",
+    "redis": "^2.8.0"
+  }
+}
