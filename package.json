@@ -4,8 +4,9 @@
   "description": "Scaled Netflix backend thesis project",
   "main": ".eslintrc.js",
   "scripts": {
-    "server": "nodemon ./server/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon ./src/server/index.js",
+    "test": "./node_modules/mocha/bin/_mocha ./test/**/*.test.js",
+    "fake": "node ./test/addFakeData.js"
   },
   "repository": {
     "type": "git",
@@ -25,7 +26,17 @@
   "dependencies": {
     "axios": "^0.17.1",
     "elasticsearch": "^14.0.0",
+    "faker": "^4.1.0",
     "koa": "^2.4.1",
-    "redis": "^2.8.0"
+    "koa-bodyparser": "^4.2.0",
+    "koa-redis": "^3.1.1",
+    "koa-router": "^7.3.0"
+  },
+  "devDependencies": {
+    "chai": "4.1.1",
+    "chai-http": "^3.0.0",
+    "imdb-api": "^3.1.2",
+    "mocha": "3.5.0",
+    "sinon": "^4.1.5"
   }
 }
