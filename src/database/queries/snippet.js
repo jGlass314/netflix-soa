@@ -14,6 +14,29 @@ const getAllSnippets = () => {
   })
 }
 
+const getSnippet = (vid) => {
+  return client.get({
+    index: 'netflix_dev',
+    type: 'snippet',
+    id: vid
+  });
+}
+
+const multiGetSnippet = (vids) => {
+  let docs = []
+  vids.forEach(vid => {
+    docs.push(vid)
+  });
+  return client.mget({
+    index: 'netflix_dev',
+    type: 'snippet',
+    body: {
+      ids: docs
+    },
+    _source: true
+  });
+}
+
 const addSnippet = (snippet) => {
   return client.index({
     index: 'netflix_dev',
@@ -46,9 +69,27 @@ const deleteSnippet = (videoId) => {
   })
 }
 
+const searchSnippet = (queryString) => {
+  return client.search({
+    index: 'netflix_dev',
+    // defaultOperator: 'AND',
+    body: {
+      query: {
+        "multi_match" : {
+          "query": queryString,
+          "fields": ["title", "genres", "director", "cast"]
+        }
+      }
+    }
+  })
+}
+
 module.exports = {
   getAllSnippets,
+  getSnippet,
+  multiGetSnippet,
   addSnippet,
   updateSnippet,
-  deleteSnippet
+  deleteSnippet,
+  searchSnippet
 };

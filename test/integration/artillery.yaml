@@ -1,0 +1,37 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    # - duration: 60
+    #   arrivalRate: 5
+    #   name: "slow start"
+    - duration: 30
+      arrivalRate: 5
+      rampTo: 10
+      name: "Warm up the application"
+    - duration: 150
+      arrivalRate: 10
+      name: "Sustained max load"
+  payload:
+    path: "keywords.csv"
+    fields:
+      - "keywords"
+scenarios:
+  - name: "Home"
+    weight: 100
+    flow:
+      - loop:
+        - get:
+            url: "/home/123"
+        count: 80
+  - name: "Home and Search"
+    weight: 50
+    flow:
+      - loop:
+        - get:
+            url: "/home/123"
+        - post:
+            url: "/search"
+            json:
+              q: "{{ keywords }}"
+        count: 80
+  

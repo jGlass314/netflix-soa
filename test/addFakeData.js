@@ -65,11 +65,11 @@ let makeFakeSnippets = recordCount => {
 // console.log(snippets);
 var index = 0;
 const indexSnippets = async (recordCount) => {
-  for(var i = 0; index < recordCount; i++) {
-    let snippets = makeFakeSnippets(800);
+  // for(var i = 0; index < recordCount; i++) {
+    let snippets = makeFakeSnippets(recordCount);
     var body = [];
     for(var j = 0; j < snippets.length; j++) {
-      body.push({index: { _index: 'netflix_dev', _type: 'snippet', _id: index++}});
+      body.push({index: { _index: 'netflix_dev', _type: 'snippet', _id: snippets[j].id}});
       body.push(snippets[j]);
     }
     client.bulk({
@@ -78,7 +78,7 @@ const indexSnippets = async (recordCount) => {
     .catch(err => {
       console.log(err);
     })
-  }
+  // }
   // client.index({
   //   index: 'netflix_dev',
   //   type: 'snippet',
@@ -93,7 +93,16 @@ const indexSnippets = async (recordCount) => {
   // })
 }
 
-// indexSnippets(250000);
+var intervalCount = 5;
+var interval = setInterval(() => {
+  if(intervalCount++ === 100) {
+    clearInterval(interval);
+  } else {
+    console.log('count:', intervalCount);
+    indexSnippets(100000);
+  }
+}, 10*1000);
+
 
 module.exports = makeFakeSnippets;
 
