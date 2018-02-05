@@ -11,6 +11,7 @@ const BASE_URL = `/content`;
 router.post(`${BASE_URL}`, async (ctx) => {
   try {
     const result = await queries.addSnippet(ctx.request.body);
+    // TODO: modify searchTerm:term cache for each search term in the cache
     if (result.result === 'created' || result.result === 'updated') {
       ctx.status = 201;
       ctx.body = {
