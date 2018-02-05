@@ -15,18 +15,17 @@ const router = new Router();
 const BASE_URL = `/home`;
 
 var inMemHome = {};
-
+var homeListings = {};
 // Send init request for home page and set to cache
 const getHomeListings = async () => {
-  var homeListings = {};
+  
   try {
     const getResponse = await axios.get(`${contentAddr}${BASE_URL}`)
-
     // console.log('/home get getResponse:', getResponse.data.homePage);
-    // homeListings = getResponse.data.homePage;
-    inMemHome = await setHomeListingsToMem(getResponse.data.homePage);
+    homeListings = getResponse.data.homePage;
+    // inMemHome = await setHomeListingsToMem(getResponse.data.homePage);
     // console.log('getHomeListings inMemHome:', inMemHome);
-    // setHomeListingsToCache(homeListings);
+    setHomeListingsToCache(homeListings);
   } catch (err) {
     console.error('/home get error:', err);
   }
@@ -38,10 +37,10 @@ router.post(`${BASE_URL}`, async (ctx) => {
     if (typeof ctx.request.body === 'object' &&
         ctx.request.body.homePage) {
         // reset homeListings
-        // homeListings = ctx.request.body.homePage;
-        inMemHome = await setHomeListingsToMem(ctx.request.body.homePage);
+        homeListings = ctx.request.body.homePage;
+        // inMemHome = await setHomeListingsToMem(ctx.request.body.homePage);
         // console.log('router.post inMemHome:', inMemHome);
-        // setHomeListingsToCache(homeListings);
+        setHomeListingsToCache(homeListings);
 
         ctx.status = 201;
         ctx.body = {
@@ -69,9 +68,10 @@ var metrics = {
   inMemHomeGet: 0
 };
 
-router.get(`${BASE_URL}/:userId`,  async (ctx) => {
+router.get(`${BASE_URL}/`,  async (ctx) => {
   // let startTime = Date.now();
   try {
+    // console.log('ctx.query:', ctx.query);
     
     let returnObj = {};
 
@@ -79,13 +79,13 @@ router.get(`${BASE_URL}/:userId`,  async (ctx) => {
     // TODO: check user+userId cache
 
     // on user+userId cache miss
-    // let userResult = await axios.get(`${userAddr}/user/${ctx.params.userId}`);
+    // let userResult = await axios.get(`${userAddr}/user/${ctx.query.userId}`);
     // TODO: add to user+userId cache
 
     // TODO: check unfinished+userId cache
 
     // on unfinished+userId cache miss
-    // let playerResult = await axios.get(`${playerAddr}/unfinished/${ctx.params.userId}`);
+    // let playerResult = await axios.get(`${playerAddr}/unfinished/${ctx.query.userId}`);
     // TODO: add to unfinished+userId cache
 
     // TODO: check snippet+videoId cache for all videos in playerResult
@@ -97,27 +97,26 @@ router.get(`${BASE_URL}/:userId`,  async (ctx) => {
 
       // returnObj._unfinished.push(snippetResult);
     // }
-
-    // var homeListings = await getHomeListingsFromCache();
-    // for(var genre in homeListings) {
-    //   returnObj[genre] = homeListings[genre];
-    // }
-    metrics.inMemHomeGet++;
-    // console.log('router.get inMemHome:', inMemHome);
-    for(var genre in inMemHome) {
-      returnObj[genre] = inMemHome[genre];
+    var homeListings = await getHomeListingsFromCache(ctx.query);
+    for(var genre in homeListings) {
+      returnObj[genre] = homeListings[genre];
     }
+    // metrics.inMemHomeGet++;
+    // console.log('router.get inMemHome:', inMemHome);
+    // for(var genre in inMemHome) {
+    //   returnObj[genre] = inMemHome[genre];
+    // }
     // console.log('returnObj:' , returnObj);
     console.log('metrics:', metrics);
     ctx.status = 200;
     ctx.body = returnObj;
     
   } catch (err) {
-    console.error('Error on GET on /home/', ctx.params.userId, ':', err);
+    console.error('Error on GET on /home/', ctx.query.userId, ':', err);
   }
   // console.log('time elapsed:', Date.now() - startTime);
 })
-/*
+
 const setHomeListingsToCache = async homeListings => {
   // set homeListing Ids to cache
   var homeListingsCacheEntry = {};
@@ -154,7 +153,7 @@ const setHomeListingsToCache = async homeListings => {
     }
   }
 }
-*/
+
 const setHomeListingsToMem = async (homeListingIds) => {
   metrics.inMemHomeSet++;
   var inMemHomeSnippets = {};
@@ -190,21 +189,28 @@ const setHomeListingsToMem = async (homeListingIds) => {
   // console.log('inMemHomeSnippets:', inMemHomeSnippets);
   return inMemHomeSnippets;
 }
-/*
-const getHomeListingsFromCache = async () => {
+
+const getHomeListingsFromCache = async (params) => {
+  // console.log('getHomeListingsFromCache params:', params);
   var homeListingIds = await redisClient.hgetallAsync('home');
   // console.log('getHomeListingsFromCache:', homeListingIds);
   // console.log('keys:', Object.keys(homeListingIds));
   var homeListings = {}
   // var count = 0;
-  for(var genre in homeListingIds) {
+  var genreArr = params.genre ? [params.genre] : Object.keys(homeListingIds);
+  // console.log('genreArray:', genreArr);
+  for(var genreIdx = 0; genreIdx < genreArr.length; genreIdx++) {
+    const genre = genreArr[genreIdx];
+    // console.log(`homeListingIds[${genre}]:${homeListingIds[genre]}`);
     homeListingIds[genre] = homeListingIds[genre].split('|');
     homeListings[genre] = [];
 
     // get snippets from cache
     var emptyIds = [];
     var missingIdxs = [];
-    for(var listingIdx = 0; listingIdx < homeListingIds[genre].length; listingIdx++) {
+    var offset = params.offset ? params.offset % homeListingIds[genre].length : 0;
+    var maxLength = (offset + (params.limit ? params.limit : 20)) % homeListingIds[genre].length;
+    for(var listingIdx = offset; listingIdx < maxLength; listingIdx++) {
       var id = homeListingIds[genre][listingIdx];
       var result = await redisClient.hgetallAsync('snippet:' + id);
       if(!result) {
@@ -223,13 +229,13 @@ const getHomeListingsFromCache = async () => {
       // console.log('remainingSnippets:', remainingSnippets.docs);
       for(var i = 0; i < remainingSnippets.docs.length; i++) {
         var snippet = remainingSnippets.docs[i];
-        console.log('remaining snippet:', snippet);
+        // console.log('remaining snippet:', snippet);
         if(snippet.found) {
           homeListings[genre][missingIdxs[0]] = snippet._source;
           missingIdxs.shift();
           // prepare snippet for caching...
           snippet._source = snippetToHash(snippet._source);
-          await redisClient.hmsetAsync('snippet:' + snippet._source.videoId, snippet._source);
+          redisClient.hmsetAsync('snippet:' + snippet._source.videoId, snippet._source);
         }
       }
     }
@@ -237,7 +243,7 @@ const getHomeListingsFromCache = async () => {
   // console.log('homeListings:', homeListings);
   return homeListings;
 }
-*/
+
 const hashToSnippet = hash => {
   hash.regions = hash.regions.split('|');
   hash.genres = hash.genres.split('|');

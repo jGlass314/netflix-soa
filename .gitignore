@@ -11,6 +11,9 @@ config/test.json
 logs
 *.log
 
+# New Relic config
+src/server/newrelic.js
+
 # Runtime data
 pids
 *.pid
