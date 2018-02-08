@@ -6,10 +6,10 @@ config:
     #   name: "slow start"
     - duration: 30
       arrivalRate: 5
-      rampTo: 10
+      rampTo: 30
       name: "Warm up the application"
-    - duration: 150
-      arrivalRate: 10
+    - duration: 60
+      arrivalRate: 30
       name: "Sustained max load"
   payload:
     path: "keywords.csv"
@@ -21,17 +21,17 @@ scenarios:
     flow:
       - loop:
         - get:
-            url: "/home/123"
-        count: 80
+            url: "/home?userId=123"
+        count: 100
   - name: "Home and Search"
-    weight: 50
+    weight: 25
     flow:
       - loop:
         - get:
-            url: "/home/123"
+            url: "/home?userId=123"
         - post:
             url: "/search"
             json:
               q: "{{ keywords }}"
-        count: 80
+        count: 100
   

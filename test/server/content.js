@@ -256,7 +256,7 @@ homeListings['horror'] =[
   "3c5a4531-b1cd-40b6-b8ce-91a3ac1672cf",
   "c935e8b1-a877-47a6-a272-a111d07abdc2",
   "8ff66803-e3c8-4790-9b3a-63ca661d08cb",
-  "a4863478-f69f-42b9-97bb-83ea7bd7261a",
+  // "a4863478-f69f-42b9-97bb-83ea7bd7261a",
   "0d454195-a13a-482b-b3cc-3ca8838df998",
   "e7a46414-939b-4ff7-a9c0-a0bcc0532218",
   "8fbfd5d9-332c-44d7-bbec-709bf8d92353",
@@ -315,19 +315,6 @@ homeListings['horror'] =[
   "3b07fb82-8ba0-4b29-ac26-a4ae58e699ac"
 ];
 
-// on server startup, post home listings to cfs
-setTimeout(() => {
-  axios.post(`${CFS_ADDRESS}${BASE_URL_HOME}`, {
-    homePage: homeListings
-  })
-  .then(response => {
-    console.log('/home post response:', response.data.message);
-  })
-  .catch(err => {
-    console.error('/home post error:', err);
-  })
-}, 3*1000);
-
 // *** Endpoints ***
 router.get(`${BASE_URL_HOME}`, async (ctx) => {
   try {
@@ -343,7 +330,7 @@ router.get(`${BASE_URL_HOME}`, async (ctx) => {
       message: err.message || 'Sorry, an error has occurred.'
     }
   }
-})
+});
 
 router.get(`${BASE_URL_CONTENT}/:videoId`, async (ctx) => {
   try {
@@ -360,15 +347,101 @@ router.get(`${BASE_URL_CONTENT}/:videoId`, async (ctx) => {
       message: err.message || 'Sorry, an error has occurred.'
     };
   }
-})
+});
+
+// POST VIDEO CONTENT
+var postIterationCount = 0
+var postInterval = setInterval(() => {
+  if(postIterationCount++ >= 1) {
+    clearInterval(postInterval);
+    return;
+  }
+  // post new videoId: 54d961fb-49d3-4190-98e6-480877f049d9
+  axios.post(`${CFS_ADDRESS}${BASE_URL_CONTENT}`, makeFakeSnippet(1, ['54d961fb-49d3-4190-98e6-480877f049d9'])[0])
+  .then(response => {
+    console.log('/content POST response:', response.data);
+  })
+  .catch(err => {
+    console.error('/content POST error:', err);
+  })
+}, 500);
+
+// POST TO HOME
+setTimeout(() => {
+  axios.post(`${CFS_ADDRESS}${BASE_URL_HOME}`, {
+    homePage: homeListings
+  })
+  .then(response => {
+    console.log('/home post response:', response.data.message);
+  })
+  .catch(err => {
+    console.error('/home post error:', err);
+  })
+}, 1*1000);
+// UPDATE CONTENT
+setTimeout(() => {
+  axios.patch(`${CFS_ADDRESS}${BASE_URL_CONTENT}`, {
+    videoId: '54d961fb-49d3-4190-98e6-480877f049d9',
+    regions: ['some region']
+  })
+  .then(response => {
+    console.log('/content patch response:', response.data.message);
+  })
+  .catch(err => {
+    console.error('/content patch error:', err);
+  })
+}, 5500)
+
+// DELETE VIDEO
+var deleteIterationCount = 0
+// var deleteInterval = setInterval(() => {
+//   if(deleteIterationCount++ >= 1) {
+//     clearInterval(deleteInterval);
+//     return;
+//   }
+//   axios.delete(`${CFS_ADDRESS}${BASE_URL_CONTENT}/54d961fb-49d3-4190-98e6-480877f049d9`)
+//   .then(response => {
+//     // delete from the home page posts
+//     var index = homeListings['horror'].indexOf('54d961fb-49d3-4190-98e6-480877f049d9');
+//     if(index !== -1) {
+//       homeListings['horror'].splice(index, 1);
+//     }
+//     console.log('/content DELETE response:', response.data);
+//   })
+//   .catch(err => {
+//     console.error('/content DELETE error:', err);
+//   })
+// }, 6*1000);
+
+const makeFakeSnippet = (number, videoIds) => {
+  var snippets = [];
+  for(var i = 0; i < number; i++) {
+    console.log('making fake snippet with videoIds[', i, ']:', videoIds[i]);
+    snippets.push({
+      videoId: videoIds[i],
+      genres: [faker.random.word(), faker.random.word(), faker.random.word()],
+      title: faker.random.words(),
+      thumbnailURL: faker.image.imageUrl(),
+      trailerURL: faker.image.imageUrl(),
+      cast: [
+        faker.name.firstName() + ' ' + faker.name.lastName(),
+        faker.name.firstName() + ' ' + faker.name.lastName(),
+        faker.name.firstName() + ' ' + faker.name.lastName()
+      ],
+      director: faker.name.firstName() + ' ' + faker.name.lastName(),
+      regions: [faker.address.country(),faker.address.country(),faker.address.country()]
+    });
+  }
+  return snippets;
+}
 
 const makeFakeContent = (number, videoIds) => {
   var videos = [];
   for(var i = 0; i < number; i++) {
     videos.push({
-      id: videoIds[i],
+      videoId: videoIds[i],
       description: faker.random.words(30),
-      genre: [faker.random.word(), faker.random.word(), faker.random.word()],
+      genres: [faker.random.word(), faker.random.word(), faker.random.word()],
       title: faker.random.words(),
       thumbnailURL: faker.image.imageUrl(),
       trailerURL: faker.image.imageUrl(),
@@ -384,7 +457,7 @@ const makeFakeContent = (number, videoIds) => {
       locationURI: faker.internet.url(),
       isOriginal: Boolean(Math.floor(Math.random() * 2)),
       isMovie: Boolean(Math.floor(Math.random() * 2)),
-      region: [faker.address.country(),faker.address.country(),faker.address.country()]
+      regions: [faker.address.country(),faker.address.country(),faker.address.country()]
     });
   }
   return videos;

@@ -41,7 +41,7 @@ const addSnippet = (snippet) => {
   return client.index({
     index: 'netflix_dev',
     type: 'snippet',
-    id: snippet.id,
+    id: snippet.videoId,
     body: snippet,
     refresh: 'true'
   });
@@ -51,7 +51,7 @@ const updateSnippet = (video) => {
   return client.update({
     index: 'netflix_dev',
     type: 'snippet',
-    id: video.id,
+    id: video.videoId,
     body: {
       doc: {
         regions: video.regions

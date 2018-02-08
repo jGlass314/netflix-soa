@@ -1,6 +1,8 @@
 const Router = require('koa-router');
 const axios = require('axios');
 const queries = require('../../database/queries/snippet');
+const home = require('./home');
+const search = require('./search');
 
 // TODO: ***  CHANGE PORT IN PRODUCTION!!!  ***
 const contentAddr = {ip:'http://localhost',port:1337};
@@ -11,13 +13,14 @@ const BASE_URL = `/content`;
 router.post(`${BASE_URL}`, async (ctx) => {
   try {
     const result = await queries.addSnippet(ctx.request.body);
-    // TODO: modify searchTerm:term cache for each search term in the cache
+    
     if (result.result === 'created' || result.result === 'updated') {
       ctx.status = 201;
       ctx.body = {
         status: 'success',
         data: result
       };
+      // **TODO**: modify searchTerm:term cache for each search term in the cache
     } else {
       ctx.status = 400;
       ctx.body = {
@@ -26,12 +29,19 @@ router.post(`${BASE_URL}`, async (ctx) => {
       };
     }
   } catch (err) {
-    console.log(err)
+    ctx.status = 400;
+    ctx.body = {
+      status: 'error',
+      message: err.message || 'Sorry, an error has occurred.'
+    }
   }
 })
 
 router.patch(`${BASE_URL}`, async (ctx) => {
   try {
+    // **TODO**: update object in memory
+    // console.log('router patch ctx.request.body:', ctx.request.body);
+    home.updateHomeListing(ctx.request.body.videoId, ctx.request.body.regions)
     const result = await queries.updateSnippet(ctx.request.body);
     if (result.result === 'updated' || results.result === 'noop') {
       ctx.status = 202;
@@ -47,13 +57,20 @@ router.patch(`${BASE_URL}`, async (ctx) => {
       };
     }
   } catch (err) {
-    console.log(err)
+    ctx.status = 400;
+    ctx.body = {
+      status: 'error',
+      message: err.message || 'Sorry, an error has occurred.'
+    }
   }
 })
 
 router.delete(`${BASE_URL}/:videoId`, async (ctx) => {
   try {
-    // console.log('videoId to delete:', ctx.params.videoId);
+    // Delete from memory, cache and search results
+    console.log('deleting snippet:', ctx.params.videoId);
+    home.deleteHomeListing(ctx.params.videoId);
+    search.deleteSearchResult(ctx.params.videoId);
     const result = await queries.deleteSnippet(ctx.params.videoId);
     if (result.result === 'deleted') {
       ctx.status = 200;
@@ -62,6 +79,8 @@ router.delete(`${BASE_URL}/:videoId`, async (ctx) => {
         data: result
       };
     }
+    
+
   } catch (err) {
     if(err.message === 'Not Found') {
       ctx.status = 404;

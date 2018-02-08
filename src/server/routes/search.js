@@ -4,6 +4,8 @@ const queries = require('../../database/queries/snippet');
 
 const router = new Router();
 
+const userAddr = 'http://localhost:1337';
+
 const bluebird = require('bluebird');
 const redis = require('redis');
 bluebird.promisifyAll(redis.RedisClient.prototype);
@@ -27,19 +29,42 @@ router.post(`${BASE_URL}`, async (ctx) => {
     var someSnippetResults = [];
     // let startTime = Date.now();
     // console.log('query string to get:', searchTerm);
+
+    // get user-subscription info
+    // check user:+userId cache
+    let subInfo = await redisClient.hgetallAsync('user:' + ctx.query.userId);
+    // on user+userId cache miss
+    if(!subInfo) {
+      subInfo = await axios.get(`${userAddr}/user/${ctx.query.userId}`);
+      subInfo = subInfo.data.data;
+      // console.log('subInfo.data.data from axios get:', subInfo);
+      
+      // add to user:+userId cache
+      redisClient.hmsetAsync('user:' + ctx.query.userId, subInfo);
+    } else {
+      // console.log('subInfo was cached. looks like:', subInfo);
+    }
+
+
     const searchResultIds = await redisClient.lrangeAsync('searchTerm:' + searchTerm, 0, -1);
+    // console.log("searchResultIds:", searchResultIds);
     if(searchResultIds && searchResultIds.length) {
       // cache hit on search term
       // console.log('cache hit on:', searchTerm, 'ids:', searchResultIds);
       metrics.cacheHitSearchIds++;
       for(var i = 0; i < searchResultIds.length; i++) {
         var id = searchResultIds[i];
+
+        // **TODO**: consider using Promise.all here instead of awaits.
+          // make sure to wrap entire function in promise and return obj in resolve
         var result = await redisClient.hgetallAsync('snippet:' + id)
         if(result) {
           metrics.cacheHitSearchSnippets++;
           result = hashToSnippet(result);
+        } else {
+          metrics.cacheMissSearchSnippets++;
         }
-        // console.log(result);
+        // console.log('cached result:', result);
         // either push valid snippet or null
         someSnippetResults.push(result);
       }
@@ -51,7 +76,7 @@ router.post(`${BASE_URL}`, async (ctx) => {
         if(snippet) {
           // console.log('cache hit on:', snippet);
           finalSnippetResults.push(snippet);
-        // if no snippet
+        // if no snippet in cache
         } else {
           // get ids of each null snippet result
           // console.log('pushing', searchResultIds[index], 'to emptyIds');
@@ -60,7 +85,6 @@ router.post(`${BASE_URL}`, async (ctx) => {
       })
       if(emptyIds.length) {
         // if there are null snippet results, get snippets by ID
-        metrics.cacheMissSearchSnippets++;
         const remainingSnippets = await queries.multiGetSnippet(emptyIds);
         // console.log('remainingSnippets:', remainingSnippets.docs);
         for(var i = 0; i < remainingSnippets.docs.length; i++) {
@@ -69,7 +93,7 @@ router.post(`${BASE_URL}`, async (ctx) => {
           finalSnippetResults.push(snippet._source);
           // prepare snippet for caching...
           snippet._source = snippetToHash(snippet._source);
-          await redisClient.hmsetAsync('snippet:' + snippet._source.videoId, snippet._source);
+          redisClient.hmsetAsync('snippet:' + snippet._source.videoId, snippet._source);
         }
       }
     } else {
@@ -86,12 +110,15 @@ router.post(`${BASE_URL}`, async (ctx) => {
       // console.log('finalSnippetResults:', finalSnippetResults);
       if(foundVideoIds.length) {
         foundVideoIds.unshift('searchTerm:' + searchTerm);
-        await redisClient.rpushAsync(foundVideoIds);
+        redisClient.rpushAsync(foundVideoIds);
       }
     }
 
+    // filter search result snippets by region
+    finalSnippetResults = finalSnippetResults.filter(snippet => snippet.regions.includes(subInfo.region));
+
     // console.log('search got result:', results);
-    console.log(metrics);
+    console.log('metrics:', metrics);
     ctx.status = 200;
     ctx.body = {
       status: 'success',
@@ -108,6 +135,23 @@ router.post(`${BASE_URL}`, async (ctx) => {
   }
 });
 
+const deleteSearchResult = async (videoId) => {
+  var scanEntries = [];
+  var cursor = 0;
+  do {
+    var reply = await redisClient.scanAsync (cursor, 'MATCH', 'searchTerm*');
+    cursor = reply[0];
+    var keys = reply[1];
+    keys.forEach(key => {
+      scanEntries.push(key);
+    })
+  } while (parseInt(cursor));
+  // delete from all search results
+  for(var entry of scanEntries) {
+    redisClient.lremAsync(entry, -1, videoId);
+  }
+}
+
 const hashToSnippet = hash => {
   hash.regions = hash.regions.split('|');
   hash.genres = hash.genres.split('|');
@@ -123,4 +167,7 @@ const snippetToHash = object => {
 }
 
 
-module.exports = router;
+module.exports = {
+  router,
+  deleteSearchResult
+}

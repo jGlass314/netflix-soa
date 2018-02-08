@@ -5,22 +5,14 @@ var client = new elasticsearch.Client({
 });
 
 var faker = require('faker');
+var randomWords = require('random-words');
 // faker.seed(123);
-
-// client.search({
-//   q: 'search'
-// }).then(function (body) {
-//   var hits = body.hits.hits;
-//   console.log('hits:', hits);
-// }, function (error) {
-//   console.trace(error.message);
-// });
 
 let makeFakeSnippets = recordCount => {
   let snippets = [];
   for(let i = 0; i < recordCount; i++) {
     let videoId = faker.random.uuid();
-    let title = faker.random.words();
+    let title = randomWords({ min: 1, max: 3, join: ' ' });
     let regions = [];
     for(let j = 0; j < Math.random() * 20 + 1; j++) {
       let country = faker.address.country();
@@ -31,9 +23,9 @@ let makeFakeSnippets = recordCount => {
     }
     let genres = [];
     for(let j = 0; j < Math.random() * 5 + 1; j++) {
-      let genre = faker.random.words();
+      let genre = randomWords({ min: 1, max: 1})[0];
       while(genres.includes(genre)) {
-        genre = faker.random.words();
+        genre = randomWords({ min: 1, max: 1});
       }
       genres.push(genre);
     }
@@ -49,7 +41,7 @@ let makeFakeSnippets = recordCount => {
     let thumbnailURL = faker.image.imageUrl();
     let trailerURL = faker.image.imageUrl();
     snippets.push({
-      id: videoId,
+      videoId: videoId,
       title: title,
       regions: regions,
       genres: genres,
@@ -69,7 +61,7 @@ const indexSnippets = async (recordCount) => {
     let snippets = makeFakeSnippets(recordCount);
     var body = [];
     for(var j = 0; j < snippets.length; j++) {
-      body.push({index: { _index: 'netflix_dev', _type: 'snippet', _id: snippets[j].id}});
+      body.push({index: { _index: 'netflix_dev', _type: 'snippet', _id: snippets[j].videoId}});
       body.push(snippets[j]);
     }
     client.bulk({
@@ -78,22 +70,9 @@ const indexSnippets = async (recordCount) => {
     .catch(err => {
       console.log(err);
     })
-  // }
-  // client.index({
-  //   index: 'netflix_dev',
-  //   type: 'snippet',
-  //   body: {
-  //     videoId: '1234',
-  //     title: '',
-  //     regions: [''],
-  //     genres: [''],
-  //     director: '',
-  //     cast: ['']
-  //   }
-  // })
 }
 
-var intervalCount = 5;
+var intervalCount = 0;
 var interval = setInterval(() => {
   if(intervalCount++ === 100) {
     clearInterval(interval);

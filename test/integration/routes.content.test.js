@@ -269,7 +269,7 @@ const makeFakeContent = (number) => {
       locationURI: faker.internet.url(),
       isOriginal: Boolean(Math.floor(Math.random() * 2)),
       isMovie: Boolean(Math.floor(Math.random() * 2)),
-      region: [faker.address.country(),faker.address.country(),faker.address.country()]
+      regions: [faker.address.country(),faker.address.country(),faker.address.country()]
     });
   }
   return videos;

@@ -5,6 +5,8 @@ const router = new Router();
 
 const contentRoutes = require('./content');
 const clientRoutes = require('./client');
+const userRoutes = require('./user');
+const playerRoutes = require('./player');
 
 const app = new Koa();
 const PORT = process.env.PORT || 1337;
@@ -12,6 +14,8 @@ const PORT = process.env.PORT || 1337;
 app.use(bodyParser());
 app.use(contentRoutes.routes());
 app.use(clientRoutes.routes());
+app.use(userRoutes.routes());
+app.use(playerRoutes.routes());
 
 const server = app.listen(PORT, () => {
   console.log(`****Test**** Server listening on port: ${PORT}`);
