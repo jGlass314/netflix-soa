@@ -394,24 +394,24 @@ setTimeout(() => {
 
 // DELETE VIDEO
 var deleteIterationCount = 0
-// var deleteInterval = setInterval(() => {
-//   if(deleteIterationCount++ >= 1) {
-//     clearInterval(deleteInterval);
-//     return;
-//   }
-//   axios.delete(`${CFS_ADDRESS}${BASE_URL_CONTENT}/54d961fb-49d3-4190-98e6-480877f049d9`)
-//   .then(response => {
-//     // delete from the home page posts
-//     var index = homeListings['horror'].indexOf('54d961fb-49d3-4190-98e6-480877f049d9');
-//     if(index !== -1) {
-//       homeListings['horror'].splice(index, 1);
-//     }
-//     console.log('/content DELETE response:', response.data);
-//   })
-//   .catch(err => {
-//     console.error('/content DELETE error:', err);
-//   })
-// }, 6*1000);
+var deleteInterval = setInterval(() => {
+  if(deleteIterationCount++ >= 1) {
+    clearInterval(deleteInterval);
+    return;
+  }
+  axios.delete(`${CFS_ADDRESS}${BASE_URL_CONTENT}/54d961fb-49d3-4190-98e6-480877f049d9`)
+  .then(response => {
+    // delete from the home page posts
+    var index = homeListings['horror'].indexOf('54d961fb-49d3-4190-98e6-480877f049d9');
+    if(index !== -1) {
+      homeListings['horror'].splice(index, 1);
+    }
+    console.log('/content DELETE response:', response.data);
+  })
+  .catch(err => {
+    console.error('/content DELETE error:', err);
+  })
+}, 6*1000);
 
 const makeFakeSnippet = (number, videoIds) => {
   var snippets = [];

@@ -249,9 +249,9 @@ const updateHomeListing = async (videoId, regions) => {
     for(var i = 0; i < inMemHome[genre].length; i++) {
       var snippet = inMemHome[genre][i];
       if(snippet.videoId === videoId) {
-        console.log('pre-patch snippet:', genre, inMemHome[genre][i]);
+        // console.log('pre-patch snippet:', genre, inMemHome[genre][i]);
         snippet.regions = regions;
-        console.log('post-patch snippet:', genre, inMemHome[genre][i]);
+        // console.log('post-patch snippet:', genre, inMemHome[genre][i]);
         break;
       }
     }

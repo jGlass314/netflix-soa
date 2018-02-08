@@ -45,7 +45,6 @@ router.post(`${BASE_URL}`, async (ctx) => {
       // console.log('subInfo was cached. looks like:', subInfo);
     }
 
-
     const searchResultIds = await redisClient.lrangeAsync('searchTerm:' + searchTerm, 0, -1);
     // console.log("searchResultIds:", searchResultIds);
     if(searchResultIds && searchResultIds.length) {
