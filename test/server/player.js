@@ -7,7 +7,7 @@ const BASE_URL_UNFINISHED = `/unfinished`;
 const CFS_ADDRESS = 'http://localhost:3000';
 
 const unwatchedIds = [
-  "a4863478-f69f-42b9-97bb-83ea7bd7261a",
+  // "a4863478-f69f-42b9-97bb-83ea7bd7261a",
   "b0f7ebad-59db-4ec2-b769-1cf47fd6ba6c",
   "8e95801a-85d9-43a3-9997-e59135e40b7c",
   "1086a333-93bc-47ea-87be-408158be26f6",

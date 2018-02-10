@@ -24,7 +24,8 @@ router.post(`${BASE_URL}`, async (ctx) => {
       // console.log('user post-set to cache:', await redisClient.hgetallAsync('user:' + ctx.request.body.userId));
       ctx.status = 201;
       ctx.body = {
-        status: 'success'
+        status: 'success',
+        message: `sub info for user ${ctx.request.body.userId} posted`
       };
     
   } catch (err) {

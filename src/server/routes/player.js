@@ -18,15 +18,16 @@ router.post(`${BASE_URL}/:userId`, async (ctx) => {
   try {
     // console.log('userId in unfinished POST:', ctx.params.userId);
     // delete unfinished videos from cache
-    redisClient.del('unfinished:' + ctx.params.userId);
+    await redisClient.del('unfinished:' + ctx.params.userId);
     let unfinishedIds = ctx.request.body.videoIds;
-    // console.log('post of unfinished Ids:', unfinishedIds);
+    // console.log('post of unfinished Ids for user:', ctx.params.userId, unfinishedIds);
     unfinishedIds.unshift('unfinished:' + ctx.params.userId);
-    redisClient.rpushAsync(unfinishedIds);
+    await redisClient.rpushAsync(unfinishedIds);
 
-    ctx.status = 200;
+    ctx.status = 201;
     ctx.body = {
-      status: 'success'
+      status: 'success',
+      message: `posted unfinished videos for user ${ctx.params.userId}`
     };
   } catch (err) {
     ctx.status = 400;
@@ -42,7 +43,8 @@ router.delete(`${BASE_URL}/:userId/:videoId`, async (ctx) => {
     redisClient.lremAsync('unfinished:' + ctx.params.userId, -1, ctx.params.videoId);
     ctx.status = 200;
     ctx.body = {
-      status: 'success'
+      status: 'success',
+      message: `deleted unfinished video ${ctx.params.videoId} for user ${ctx.params.userId}`
     };
   } catch (err) {
     ctx.status = 400;

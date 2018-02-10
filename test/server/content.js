@@ -334,13 +334,14 @@ router.get(`${BASE_URL_HOME}`, async (ctx) => {
 
 router.get(`${BASE_URL_CONTENT}/:videoId`, async (ctx) => {
   try {
-    console.log('videoId to CONTENT service GET:', ctx.request.query);
+    console.log('videoId to CONTENT service GET:', ctx.params.videoId);
     ctx.status = 200;
     ctx.body = {
       status: 'success',
-      data: makeFakeContent(1, [ctx.params.videoId])
+      data: makeFakeContent(1, [ctx.params.videoId])[0]
     };
   } catch (err) {
+    console.log('some error');
     ctx.status = 404;
     ctx.body = {
       status: 'error',
@@ -359,7 +360,7 @@ var postInterval = setInterval(() => {
   // post new videoId: 54d961fb-49d3-4190-98e6-480877f049d9
   axios.post(`${CFS_ADDRESS}${BASE_URL_CONTENT}`, makeFakeSnippet(1, ['54d961fb-49d3-4190-98e6-480877f049d9'])[0])
   .then(response => {
-    console.log('/content POST response:', response.data);
+    // console.log('/content POST response:', response.data);
   })
   .catch(err => {
     console.error('/content POST error:', err);

@@ -5,7 +5,7 @@
   "main": ".eslintrc.js",
   "scripts": {
     "start": "nodemon ./src/server/index.js",
-    "test": "./node_modules/mocha/bin/_mocha ./test/**/*.test.js",
+    "test": "nyc mocha ./test/**/*.test.js",
     "test-server": "nodemon ./test/server/index.js",
     "fake": "node ./test/addFakeData.js"
   },
@@ -42,7 +42,9 @@
     "chai-http": "^3.0.0",
     "faker": "^4.1.0",
     "imdb-api": "^3.1.2",
+    "istanbul": "^0.4.5",
     "mocha": "3.5.0",
+    "nyc": "^11.4.1",
     "random-words": "^1.0.0",
     "request": "^2.83.0",
     "sinon": "^4.2.2"
