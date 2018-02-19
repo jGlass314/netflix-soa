@@ -1,37 +1,41 @@
 config:
-  target: "http://localhost:3000"
+  #target: "http://localhost:3000"
+  target: "http://ec2-54-219-142-233.us-west-1.compute.amazonaws.com:3000"
   phases:
     # - duration: 60
     #   arrivalRate: 5
     #   name: "slow start"
-    - duration: 30
+    - duration: 180
       arrivalRate: 5
-      rampTo: 30
+      rampTo: 10
       name: "Warm up the application"
-    - duration: 60
-      arrivalRate: 30
+    - duration: 180
+      arrivalRate: 10
       name: "Sustained max load"
   payload:
     path: "keywords.csv"
     fields:
       - "keywords"
+    order: "sequence"
 scenarios:
-  - name: "Home"
-    weight: 100
-    flow:
-      - loop:
-        - get:
-            url: "/home?userId=123"
-        count: 100
+  #- name: "Home"
+  #  weight: 100
+  #  flow:
+  #    - loop:
+  #      - get:
+  #          url: "/home?userId=123"
+  #      count: 100
   - name: "Home and Search"
-    weight: 25
+  #  weight: 25
     flow:
       - loop:
-        - get:
-            url: "/home?userId=123"
+        #- get:
+        #    url: "/home?userId=123"
         - post:
             url: "/search"
             json:
               q: "{{ keywords }}"
-        count: 100
+        # count: 100
+        # seconds between loops
+        # think: 20
   

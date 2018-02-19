@@ -4,10 +4,7 @@
   "description": "Scaled Netflix backend thesis project",
   "main": ".eslintrc.js",
   "scripts": {
-    "start": "nodemon ./src/server/index.js",
-    "test": "nyc mocha ./test/**/*.test.js",
-    "test-server": "nodemon ./test/server/index.js",
-    "fake": "node ./test/addFakeData.js"
+    "start": "nodemon ./index.js"
   },
   "repository": {
     "type": "git",

@@ -2,12 +2,12 @@ const Router = require('koa-router');
 const axios = require('axios');
 const qs = require('qs');
 const faker = require('faker');
-
+require('dotenv').config()
 const router = new Router();
 const BASE_URL_CONTENT = `/content`;
 const BASE_URL_HOME = `/home`;
 const BASE_URL_SEARCH = `/search`;
-const CFS_ADDRESS = 'http://localhost:3000';
+const CFS_ADDRESS = process.env.CFSADDRESS;
 
 // GET HOME PAGE
 var homeIterationCount = 0
@@ -19,8 +19,7 @@ var homeInterval = setInterval(() => {
   // get homepage for userId 123
   axios.get(`${CFS_ADDRESS}${BASE_URL_HOME}?userId=123`)
   .then(response => {
-    
-    console.log('/home GET response:', response.data);
+    // console.log('/home GET response:', response.data);
   })
   .catch(err => {
     console.error('/home GET error:', err);
@@ -42,7 +41,7 @@ var searchInterval = setInterval(() => {
     q: searchWords
   })
   .then(response => {
-    console.log('/search POST response:', response.data);
+    // console.log('/search POST response:', response.data);
   })
   .catch(err => {
     console.log('/search POST error:', err);

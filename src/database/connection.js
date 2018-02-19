@@ -1,6 +1,7 @@
 var elasticsearch = require('elasticsearch');
+require('dotenv').config()
 var client = new elasticsearch.Client({
-  host: 'elastic:elastic@localhost:9200',
+  host: process.env.ES_URL,
   log: 'info'
 });
 

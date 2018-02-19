@@ -1,22 +1,9 @@
 const client = require('../connection');
-
-const getAllSnippets = () => {
-  return client.search({
-    index: 'netflix_dev',
-    body: {
-      query: {
-        'match_all' : {}
-      }
-    }
-  })
-  .catch(err => {
-    console.error(err);
-  })
-}
+require('dotenv').config()
 
 const getSnippet = (vid) => {
   return client.get({
-    index: 'netflix_dev',
+    index: process.env.ES_INDEX,
     type: 'snippet',
     id: vid
   });
@@ -28,7 +15,7 @@ const multiGetSnippet = (vids) => {
     docs.push(vid)
   });
   return client.mget({
-    index: 'netflix_dev',
+    index: process.env.ES_INDEX,
     type: 'snippet',
     body: {
       ids: docs
@@ -39,7 +26,7 @@ const multiGetSnippet = (vids) => {
 
 const addSnippet = (snippet) => {
   return client.index({
-    index: 'netflix_dev',
+    index: process.env.ES_INDEX,
     type: 'snippet',
     id: snippet.videoId,
     body: snippet,
@@ -49,7 +36,7 @@ const addSnippet = (snippet) => {
 
 const updateSnippet = (video) => {
   return client.update({
-    index: 'netflix_dev',
+    index: process.env.ES_INDEX,
     type: 'snippet',
     id: video.videoId,
     body: {
@@ -62,7 +49,7 @@ const updateSnippet = (video) => {
 
 const deleteSnippet = (videoId) => {
   return client.delete({
-    index: 'netflix_dev',
+    index: process.env.ES_INDEX,
     type: 'snippet',
     id: videoId,
     refresh: 'true'
@@ -71,8 +58,7 @@ const deleteSnippet = (videoId) => {
 
 const searchSnippet = (queryString) => {
   return client.search({
-    index: 'netflix_dev',
-    // defaultOperator: 'AND',
+    index: process.env.ES_INDEX,
     body: {
       query: {
         "multi_match" : {
@@ -85,7 +71,6 @@ const searchSnippet = (queryString) => {
 }
 
 module.exports = {
-  getAllSnippets,
   getSnippet,
   multiGetSnippet,
   addSnippet,

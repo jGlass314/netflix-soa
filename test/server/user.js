@@ -1,9 +1,9 @@
 const Router = require('koa-router');
 const axios = require('axios');
 const faker = require('faker');
-
+require('dotenv').config()
 const router = new Router();
-const CFS_ADDRESS = 'http://localhost:3000';
+const CFS_ADDRESS = process.env.CFSADDRESS;
 const BASE_URL_USER = `/user`;
 
 router.get(`${BASE_URL_USER}/:userId`, async (ctx) => {
@@ -41,10 +41,10 @@ var interval = setInterval(() => {
     region: 'Sweden'
   })
   .then(response => {
-    // console.log('/unfinished POST response:', response.data);
+    console.log('/user POST response:', response.data);
   })
   .catch(err => {
-    console.error('/unfinished POST error:', err);
+    console.error('/user POST error:', err);
   })
 }, 12*1000);
 

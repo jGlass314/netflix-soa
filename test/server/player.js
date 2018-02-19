@@ -1,19 +1,17 @@
 const Router = require('koa-router');
 const axios = require('axios');
 const faker = require('faker');
-
+require('dotenv').config()
 const router = new Router();
 const BASE_URL_UNFINISHED = `/unfinished`;
-const CFS_ADDRESS = 'http://localhost:3000';
+const CFS_ADDRESS = process.env.CFSADDRESS;
 
 const unwatchedIds = [
-  // "a4863478-f69f-42b9-97bb-83ea7bd7261a",
-  "b0f7ebad-59db-4ec2-b769-1cf47fd6ba6c",
-  "8e95801a-85d9-43a3-9997-e59135e40b7c",
-  "1086a333-93bc-47ea-87be-408158be26f6",
-  "6e0855cf-fdff-4455-a2c1-4ad65d1d48f9",
-  "963c63d8-6d43-4b2c-a1a3-faa52bfca924",
-  "f2cb4ecb-bae4-4c42-987d-79bfa08fda66"
+  "12086cd5-d33a-4da9-863d-de97381ad601",
+  "4f311206-a3aa-4c99-919d-068373fb820d",
+  "9d56a21d-e288-4e16-8350-7c2905e866df",
+  "93ec18a6-dd54-4b85-ace8-0fd6c11bb6bc",
+  "27fd2650-5b29-458f-8c2c-28e2a8a93b00"
 ];
 
 router.get(`${BASE_URL_UNFINISHED}/:userId`, async (ctx) => {
